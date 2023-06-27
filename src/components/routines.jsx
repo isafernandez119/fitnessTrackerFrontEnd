@@ -19,12 +19,7 @@ export default function Routines() {
               <div className="post" key={routine.id}>
                 <h2>{routine.name}</h2>
                 <p className="description">Goal: {routine.goal}</p>
-                <div>
-                  created by:{" "}
-                  <Link to={`/activities/${routine.creatorId}`}>
-                    {routine.creatorName}
-                  </Link>
-                </div>
+                <div>created by:{routine.creatorName}</div>
                 {routine.activities.length > 0 ? (
                   <>
                     <h3>Activities:</h3>

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate, useOutletContext } from "react-router-dom";
+import { useNavigate, useOutletContext } from "react-router-dom";
 import Add_Activity from "./add_activity";
 
 export default function Activities() {
@@ -18,9 +18,6 @@ export default function Activities() {
             <div className="activity-post" key={activity.id}>
               <h2>{activity.name}</h2>
               <p className="description">{activity.description}</p>
-              <Link to={`/activities/${activity.id}`}>
-                <button>Send Message</button>
-              </Link>
             </div>
           ))}
         </div>

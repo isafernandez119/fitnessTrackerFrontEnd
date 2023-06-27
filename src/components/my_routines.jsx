@@ -1,13 +1,45 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useOutletContext } from "react-router-dom";
-import { BASE_URL } from "../api/util";
+import {
+  BASE_URL,
+  deleteRoutine,
+  deleteRoutineActivity,
+  getMyDamnRoutines,
+  getMyUser,
+  addActivityToRoutine,
+} from "../api/util";
 import { toast } from "react-hot-toast";
 
 export default function My_Routines() {
-  const { user, routines, myRoutines, setRoutines } = useOutletContext();
+  const [meRoutines, setMeRoutines] = useState([]);
   const [name, setName] = useState("");
   const [isPublic, setIsPublic] = useState(false);
   const [goal, setGoal] = useState("");
+  const [count, setCount] = useState("");
+  const [duration, setDuration] = useState("");
+  const [myShit, setMyShit] = useState([]);
+  const {
+    user,
+    routines,
+    setRoutines,
+    postId,
+    token,
+    setToken,
+    activities,
+    myRoutines,
+    activity,
+    routineId,
+  } = useOutletContext();
+
+  useEffect(() => {
+    const fetchShit = async () => {
+      const bofa = await getMyUser();
+      const myShit = await getMyDamnRoutines(bofa);
+      setMyShit(myShit);
+    };
+    fetchShit();
+    console.log(myShit, "pppp");
+  }, []);
 
   async function handleSubmit(e) {
     const localToken = localStorage.getItem("token");
@@ -35,6 +67,34 @@ export default function My_Routines() {
       setGoal("");
       setIsPublic(false);
     }
+  }
+  async function addActivityToRoutine(e) {
+    const response = await fetch(
+      `${BASE_URL}/routines/${myRoutines.id}/activities`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          activityId: "",
+          count: "",
+          duration: "",
+        }),
+      }
+    );
+    const result = await response.json();
+    console.log(myRoutines, "hey there");
+    console.log(result);
+    // console.log(result);
+    if (!result.id) {
+      toast.error("cannot add activity");
+    } else {
+      toast.success("Activity has been added!");
+      setCount("");
+      setDuration("");
+    }
+    return result;
   }
 
   return (
@@ -65,19 +125,67 @@ export default function My_Routines() {
         <>
           <div>
             <h1 className="heading">Welcome {user.username}</h1>
-            {myRoutines.map((routine) => {
-              console.log(routine);
+            {myShit.map((routine) => {
+              const routineId = routine.id;
               if (routine.creatorId === user.id) {
                 return (
                   <ul className="act-list" key={routine.id}>
                     <li>
-                      <span className="activity-name">{routine.name}</span>
+                      <span className="activity-name">
+                        <strong>Routine</strong>
+                        <br />
+                        {routine.name}
+                      </span>
                       <br />
                       <strong>goal:</strong> {routine.goal}
                       <br />
+                      <div>
+                        <h3>Activities:</h3>
+                        {routine.activities.map((activity) => {
+                          return (
+                            <ul className="act-list" key={activity.id}>
+                              <li>
+                                <span className="activity-name">
+                                  {activity.name}
+                                </span>
+                                <br />
+                                <strong>description:</strong>{" "}
+                                {activity.description}
+                                <br />
+                                <strong>count:</strong> {activity.count}
+                                <br />
+                                <strong>duration:</strong> {activity.duration}
+                              </li>
+                            </ul>
+                          );
+                        })}
+                      </div>
                       <div>{routine.isPublic ? <>Public</> : <>Private</>}</div>
                       <strong>creator:</strong> {routine.creatorName}
                     </li>
+                    <div>
+                      <button
+                        onClick={() => {
+                          deleteRoutine(routineId);
+                        }}
+                      >
+                        delete
+                      </button>
+                      <button
+                        className="manage"
+                        onClick={() =>
+                          deleteRoutineActivity(postId, token, setToken)
+                        }
+                      >
+                        remove activities
+                      </button>
+                      <button onClick={() => addActivityToRoutine(routineId)}>
+                        Add Activity
+                      </button>
+                      <Link to={`/${routine.id}`}>
+                        <button>Edit Routine and Activities</button>
+                      </Link>
+                    </div>
                   </ul>
                 );
               }

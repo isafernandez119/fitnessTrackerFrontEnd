@@ -1,6 +1,7 @@
 import { Outlet } from "react-router-dom";
 import Navbar from "../components/navbar";
 import { useState, useEffect } from "react";
+
 import { BASE_URL } from "../api/util";
 import { Toaster } from "react-hot-toast";
 
@@ -12,14 +13,14 @@ export default function Root() {
   const [user, setUser] = useState({});
   const [isDeleted, setIsDeleted] = useState(false);
   const [error, setError] = useState("");
-
+  const [routineActivity, setRoutineActivity] = useState([]);
   // console.log(localStorage);
-
   useEffect(() => {
     async function getActivities() {
       const response = await fetch(`${BASE_URL}/activities`);
       const activities = await response.json();
       setActivities(activities);
+      // console.log(activities);
     }
     getActivities();
   }, [activities]);
@@ -32,12 +33,30 @@ export default function Root() {
     }
     getRoutines();
   }, [routines]);
+  useEffect(() => {
+    async function getRoutineActivityById() {
+      const response = await fetch(
+        `${BASE_URL}/activities/${activities.id}/routines`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const routineActivity = await response.json();
+      setRoutineActivity(routineActivity);
+    }
+    getRoutineActivityById(routines);
+    // console.log(activities);
+    // console.log(myRoutines);
+  }, []);
 
   useEffect(() => {
     async function getMyRoutines(user) {
       const localToken = localStorage.getItem("token");
       if (localToken) {
         setToken(localToken);
+        console.log(user, "user");
         const response = await fetch(
           `${BASE_URL}/users/${user.username}/routines`,
           {
@@ -48,12 +67,12 @@ export default function Root() {
           }
         );
         const routines = await response.json();
-        // console.log(routines);
+        console.log("hello", routines);
         setMyRoutines(routines);
       }
     }
     getMyRoutines(user);
-  }, [token, myRoutines]);
+  }, []);
 
   useEffect(() => {
     async function fetchUser() {
